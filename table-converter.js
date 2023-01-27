@@ -49,12 +49,34 @@ function convertTableElementToMarkdown(tableEl) {
   return rows.join(NL);
 }
 
+function convertElementToText(element) {
+  let text = "";
+
+  if (element.nodeType == 3) {
+    text += element.wholeText;
+  } else if (element.nodeName == "A") {
+    text += `[${element.innerText}](${element.href})`;
+  } else {
+    for (const node of element.childNodes) {
+      if (node.nodeType == 3) {
+        text += node.wholeText;
+      } else if (node.nodeName == "A") {
+        text += `[${node.innerText}](${node.href})`;
+      } else {
+        text += convertElementToText(node);
+      }
+    }
+  }
+
+  return text;
+}
+
 function convertTableRowElementToMarkdown(tableRowEl, rowNumber) {
   var cells = [];
   var cellEls = tableRowEl.children;
   for(var i=0; i<cellEls.length; i++) {
     var cell = cellEls[i];
-    cells.push(cell.innerText + ' |');
+    cells.push(convertElementToText(cell) + ' |');
   }
   var row = '| ' + cells.join(" ");
 
